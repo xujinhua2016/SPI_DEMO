@@ -11,5 +11,5 @@ Create a new branch is quick and simple.
 add merge
 
 good
-xujihuagood
+xujihuagood  yes
 bug - stash
