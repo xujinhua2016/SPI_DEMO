@@ -82,9 +82,13 @@ int main(void)
 	while(1)
 	{
 	//	SPI_FLASH_SendByte(0xaa);
+		macSPI_FLASH_CS_ENABLE();
 		Delay(0xffff0);
+		
 		SPI_FLASH_SendByte(0xaa);
 		printf("\r\n master发送成功，0xaa \r\n");
+		Delay(0xffff0);
+		macSPI_FLASH_CS_DISABLE();
 		Delay(0xffff0);
 		printf("\r\n接收到数据,%x",SPI_FLASH_ReadByte());
 		

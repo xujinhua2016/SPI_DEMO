@@ -93,7 +93,7 @@ void SPI_FLASH_Init(void)
   GPIO_Init(macSPI_MOSI_PORT, &GPIO_InitStructure);
 
   /* Deselect the FLASH: Chip Select high */
-  macSPI_FLASH_CS_DISABLE();
+ // macSPI_FLASH_CS_DISABLE();
 //	macSPI_FLASH_CS_ENABLE();
 
   /* SPI1 configuration */
@@ -106,7 +106,7 @@ void SPI_FLASH_Init(void)
   SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
   SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
   SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
+  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
   SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
   SPI_InitStructure.SPI_CRCPolynomial = 7;
   SPI_Init(macSPIx , &SPI_InitStructure);
@@ -151,12 +151,12 @@ void NVIC_Configuration(void)
 *******************************************************************************/
 u8 SPI_FLASH_ReadByte(void)
 {
-  return (SPI_FLASH_SendByte(Dummy_Byte));
-//	/* Wait to receive a byte */
-//  while (SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_RXNE) == RESET);
+//  return (SPI_FLASH_SendByte(Dummy_Byte));
+	/* Wait to receive a byte */
+  while (SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_RXNE) == RESET);
 
-//  /* Return the byte read from the SPI bus */
-//  return SPI_I2S_ReceiveData(macSPIx );
+  /* Return the byte read from the SPI bus */
+  return SPI_I2S_ReceiveData(macSPIx );
 }
 
 /*******************************************************************************

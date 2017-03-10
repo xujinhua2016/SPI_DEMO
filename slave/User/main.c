@@ -66,7 +66,7 @@ int main(void)
 	SPI_FLASH_Init();
 	NVIC_Configuration();
 	
-	macSPI_FLASH_CS_ENABLE();
+//	macSPI_FLASH_CS_ENABLE();
 	
 //	SPI_FLASH_ReadByte();
 //	
@@ -79,8 +79,9 @@ int main(void)
 		//SPI_FLASH_SendByte(0xbb);
 		
 		//for(i=0;i<20;i++)
-		SPI_FLASH_SendByte(0x55);
+//		SPI_FLASH_SendByte(0x55);
 //		printf("%x",SPI_FLASH_ReadByte());
+		printf("\r\n 这是一个SPI_SLAVE实验 \r\n");
 		printf("\r\n 接收成功 ,%x\r\n",SPI_FLASH_ReadByte());
 		Delay(0xeeff0);
 		SPI_FLASH_SendByte(0x55);
