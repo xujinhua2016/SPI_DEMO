@@ -16,33 +16,13 @@
   */
   
 #include "bsp_spi.h"
-
-/* Private typedef -----------------------------------------------------------*/
-//#define SPI_FLASH_PageSize      4096
-#define SPI_FLASH_PageSize      256
-#define SPI_FLASH_PerWritePageSize      256
-
-/* Private define ------------------------------------------------------------*/
-#define W25X_WriteEnable		      0x06 
-#define W25X_WriteDisable		      0x04 
-#define W25X_ReadStatusReg		    0x05 
-#define W25X_WriteStatusReg		    0x01 
-#define W25X_ReadData			        0x03 
-#define W25X_FastReadData		      0x0B 
-#define W25X_FastReadDual		      0x3B 
-#define W25X_PageProgram		      0x02 
-#define W25X_BlockErase			      0xD8 
-#define W25X_SectorErase		      0x20 
-#define W25X_ChipErase			      0xC7 
-#define W25X_PowerDown			      0xB9 
-#define W25X_ReleasePowerDown	    0xAB 
-#define W25X_DeviceID			        0xAB 
-#define W25X_ManufactDeviceID   	0x90 
-#define W25X_JedecDeviceID		    0x9F 
-
-#define WIP_Flag                  0x01  /* Write In Progress (WIP) flag */
+#include "bsp_led.h"
 
 #define Dummy_Byte                0xFF
+
+uint8_t SPI1_Buffer_Rx[100];
+
+uint8_t tempValue;
 
 /*******************************************************************************
 * Function Name  : SPI_FLASH_Init
@@ -80,11 +60,13 @@ void SPI_FLASH_Init(void)
   /*!< Configure SPI_FLASH_SPI pins: MISO */
 	macSPI_MISO_APBxClock_FUN ( macSPI_MISO_CLK, ENABLE );
   GPIO_InitStructure.GPIO_Pin = macSPI_MISO_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
   GPIO_Init(macSPI_MISO_PORT, &GPIO_InitStructure);
 
   /*!< Configure SPI_FLASH_SPI pins: MOSI */
 	macSPI_MOSI_APBxClock_FUN ( macSPI_MOSI_CLK, ENABLE );
   GPIO_InitStructure.GPIO_Pin = macSPI_MOSI_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_Init(macSPI_MOSI_PORT, &GPIO_InitStructure);
 
   /* Deselect the FLASH: Chip Select high */
@@ -103,9 +85,28 @@ void SPI_FLASH_Init(void)
   SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
   SPI_InitStructure.SPI_CRCPolynomial = 7;
   SPI_Init(macSPIx , &SPI_InitStructure);
+	
+//	SPI_I2S_ITConfig(macSPIx, SPI_I2S_IT_RXNE, ENABLE);			//使能接受中断
 
   /* Enable SPI1  */
   SPI_Cmd(macSPIx , ENABLE);
+	
+}
+
+//88*****************************************************88
+void NVIC_Configuration(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+	
+	//优先级分组
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	
+	//外设中断
+	NVIC_InitStructure.NVIC_IRQChannel = macSPIx_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 	
 }
 
@@ -120,12 +121,19 @@ void SPI_FLASH_Init(void)
 *******************************************************************************/
 u8 SPI_FLASH_ReadByte(void)
 {
-  return (SPI_FLASH_SendByte(Dummy_Byte));
+	uint8_t i;
+	
+	
+ // return (SPI_FLASH_SendByte(Dummy_Byte));
 	/* Wait to receive a byte */
-//  while (SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_RXNE) == RESET);
+  while (SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_RXNE) == RESET);
+//	{
+//		i++;
+//		if(i > 200) return 0;
+//	}
 
-//  /* Return the byte read from the SPI bus */
-//  return SPI_I2S_ReceiveData(macSPIx );
+  /* Return the byte read from the SPI bus */
+  return SPI_I2S_ReceiveData(macSPIx );
 }
 
 /*******************************************************************************
@@ -138,17 +146,67 @@ u8 SPI_FLASH_ReadByte(void)
 *******************************************************************************/
 u8 SPI_FLASH_SendByte(u8 byte)
 {
+	//发送数据时，将片选引脚拉低
+//	macSPI_FLASH_CS_ENABLE();
+	
   /* Loop while DR register in not emplty */
   while (SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_TXE) == RESET);
 
   /* Send byte through the SPI1 peripheral */
   SPI_I2S_SendData(macSPIx , byte);
 
-  /* Wait to receive a byte */
-  while (SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_RXNE) == RESET);
+//  /* Wait to receive a byte */
+//  while (SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_RXNE) == RESET);
+//	
+//	macSPI_FLASH_CS_DISABLE();
 
-  /* Return the byte read from the SPI bus */
-  return SPI_I2S_ReceiveData(macSPIx );
+//  /* Return the byte read from the SPI bus */
+//  return SPI_I2S_ReceiveData(macSPIx );
+//	
+
+	
+	return 0;
+}
+
+
+//中断服务程序
+void SPI1_IRQHandler(void)
+{
+//	uint8_t i = 0;
+//	
+//	if(i == 99)
+//	{
+//		i =  0;
+//	}
+//	else
+//	{
+//		SPI1_Buffer_Rx[i++] = SPI_I2S_ReceiveData(macSPIx);
+//	}
+	
+	//if(SPI_I2S_GetFlagStatus(macSPIx , SPI_I2S_FLAG_RXNE) != RESET)
+	if(SPI_I2S_GetITStatus(macSPIx , SPI_I2S_FLAG_RXNE))
+	{
+		LED1_TOGGLE;
+		tempValue = SPI_I2S_ReceiveData(macSPIx );
+		
+		SPI_FLASH_SendByte(0xaa);
+		
+		//SPI_I2S_ClearFlag(macSPIx , SPI_I2S_FLAG_RXNE|SPI_I2S_FLAG_TXE);
+		
+		//Delay(0xeeff0);
+	}
+	else
+		;
+	
+//	 SPI_I2S_ClearITPendingBit(SPI1,SPI_I2S_IT_TXE|SPI_I2S_IT_RXNE);
+	
+//		LED1_TOGGLE;
+//		tempValue = SPI_I2S_ReceiveData(macSPIx );
+//		
+//		SPI_I2S_ClearFlag(macSPIx , SPI_I2S_FLAG_RXNE|SPI_I2S_FLAG_TXE);
+//	
+//		SPI_FLASH_SendByte(0xaa);
+	
 }
 
 

@@ -55,6 +55,7 @@ void SPI_Flash_PowerDown(void);
 void SPI_Flash_WAKEUP(void);
 
 
+
 u8 SPI_FLASH_ReadByte(void);
 u8 SPI_FLASH_SendByte(u8 byte);
 u16 SPI_FLASH_SendHalfWord(u16 HalfWord);

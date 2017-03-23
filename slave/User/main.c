@@ -17,6 +17,8 @@
 #include "stm32f10x.h"
 #include "bsp_usart1.h"
 #include "bsp_spi_flash.h"
+#include "bsp_lcd.h"
+#include "bsp_led.h"
 
 
 typedef enum { FAILED = 0, PASSED = !FAILED} TestStatus;
@@ -45,6 +47,8 @@ __IO uint32_t FlashID = 0;
 __IO TestStatus TransferStatus1 = FAILED;
 
 extern uint8_t SPI1_Buffer_Rx[100];
+
+extern uint8_t tempValue;
 // 函数原型声明
 void Delay(__IO uint32_t nCount);
 TestStatus Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength);
@@ -57,36 +61,50 @@ TestStatus Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength
  */
 int main(void)
 { 	
+	
+	char * bbs;
+	
 	uint8_t i;
 	/* 配置串口1为：115200 8-N-1 */
 	USARTx_Config();
-	printf("\r\n 这是一个SPI_SLAVE实验 \r\n");
+	
+	LED_GPIO_Config();
 	
 	/* 8M串行flash W25Q64初始化 */
 	SPI_FLASH_Init();
-	NVIC_Configuration();
+//	NVIC_Configuration();
 	
-//	macSPI_FLASH_CS_ENABLE();
+	LCD_Init ();         //LCD 初始化
 	
-//	SPI_FLASH_ReadByte();
-//	
-//	for(i=0;i<20;i++)
-//	printf("%x",SPI1_Buffer_Rx[i]);
+
+	/* 通过修改GRAM的扫描方向，然后通过看液晶清屏的色块，就可以知道GRAM的实际扫描方向了 */
+  ILI9341_GramScan ( 1 );
+	
+  ILI9341_Clear ( 0, 0, 240, 320, macBACKGROUND);
+	
+  ILI9341_DispString_EN ( 0, 10, "this is slave program", macBACKGROUND, macRED );
+	
+	ILI9341_DispChar_EN ( 60, 60, 'b', macBACKGROUND, macRED );
+	
 	
 	while(1)
 	{
 		
-		//SPI_FLASH_SendByte(0xbb);
+
+		//bbs = (char * )"abck";
+	//	printf("\r\n 接收成功 ,%x\r\n",tempValue);
 		
-		//for(i=0;i<20;i++)
+		
 //		SPI_FLASH_SendByte(0x55);
-//		printf("%x",SPI_FLASH_ReadByte());
-		printf("\r\n 这是一个SPI_SLAVE实验 \r\n");
-		printf("\r\n 接收成功 ,%x\r\n",SPI_FLASH_ReadByte());
-		Delay(0xeeff0);
-		SPI_FLASH_SendByte(0x55);
-		printf("\r\n 发送数据成功，0x55 \r\n");
-		Delay(0xeeff0);
+		//ILI9341_DispChar_EN ( 80, 80, bbs, macBACKGROUND, macRED );
+//		ILI9341_DispString_EN ( 100, 100, bbs, macBACKGROUND, macRED );
+		if(SPI_FLASH_ReadByte() == 0xaa)LED3_TOGGLE;
+		SPI_FLASH_SendByte(0xdd);
+		
+		Delay(0x000f0);
+//		SPI_FLASH_SendByte(0xdd);
+//		Delay(0xeeff0);
+//		LED3_TOGGLE
 	};  
 }
 

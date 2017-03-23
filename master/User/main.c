@@ -17,6 +17,8 @@
 #include "stm32f10x.h"
 #include "bsp_usart1.h"
 #include "bsp_spi.h"
+#include "bsp_lcd.h"
+#include "bsp_led.h"
 
 
 typedef enum { FAILED = 0, PASSED = !FAILED} TestStatus;
@@ -37,7 +39,9 @@ typedef enum { FAILED = 0, PASSED = !FAILED} TestStatus;
 //#define  sFLASH_ID              0xEF3015     //W25X16
 //#define  sFLASH_ID              0xEF4015	 //W25Q16
 #define  sFLASH_ID              0XEF4017    //W25Q64
-     
+
+
+extern uint8_t tempValue;
 
 /* 发送缓冲区初始化 */
 uint8_t Tx_Buffer[] = " 感谢您选用野火stm32开发板\r\n                http://firestm32.taobao.com";
@@ -66,31 +70,55 @@ TestStatus Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength
  */
 int main(void)
 { 	
+	uint32_t temp;
+	
 	/* 配置串口1为：115200 8-N-1 */
 	USARTx_Config();
-	printf("\r\n 这是SPI主机master实验 \r\n");
+	//printf("\r\n 这是SPI主机master实验 \r\n");
 	
 	/* 8M串行flash W25Q64初始化 */
 	SPI_FLASH_Init();
+//	NVIC_Configuration();
 	
-	macSPI_FLASH_CS_ENABLE();
+	LED_GPIO_Config();
+	
+	LCD_Init ();         //LCD 初始化
+	
+	ILI9341_GramScan ( 1 );
+	
+  ILI9341_Clear ( 0, 0, 240, 320, macBACKGROUND);
+	
+  ILI9341_DispString_EN ( 0, 10, "this is master program", macBACKGROUND, macRED );
+	
+	ILI9341_DispChar_EN ( 60, 60, 'A', macBACKGROUND, macRED );
 	
 	SPI_FLASH_SendByte(0xaa);
 	
-	printf("\r\n 发送成功，0xaa \r\n");
-	
 	while(1)
 	{
-	//	SPI_FLASH_SendByte(0xaa);
+		
 		macSPI_FLASH_CS_ENABLE();
-		Delay(0xffff0);
 		
 		SPI_FLASH_SendByte(0xaa);
-		printf("\r\n master发送成功，0xaa \r\n");
-		Delay(0xffff0);
+		
+	//	temp = SPI_FLASH_ReadByte();
+
+	//	Delay(0xffff0);
+		
+//		if(SPI_FLASH_ReadByte() != 0x00)
+//		//if((SPI_FLASH_ReadByte() == 0xdd) || (SPI_FLASH_ReadByte() == 0xaa))
+//		{
+//			LED1_TOGGLE;
+//		}
+		
+		//macSPI_FLASH_CS_DISABLE();
+		if(SPI_FLASH_ReadByte() == 0xdd) LED1_TOGGLE;
+		//LED1_TOGGLE
 		macSPI_FLASH_CS_DISABLE();
-		Delay(0xffff0);
-		printf("\r\n接收到数据,%x",SPI_FLASH_ReadByte());
+//	Delay(0x1000a);
+		
+		
+		//printf("\r\n接收到数据,%x",SPI_FLASH_ReadByte());
 		
 	}		
 }

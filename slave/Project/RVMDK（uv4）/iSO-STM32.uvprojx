@@ -369,7 +369,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS;..\..\User;..\..\Libraries\FWlib\inc;..\..\User\usart;..\..\User\spi_flash</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS;..\..\User;..\..\Libraries\FWlib\inc;..\..\User\usart;..\..\User\spi_flash;..\..\User\lcd;..\..\User\led</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -601,6 +601,26 @@
               <FileName>bsp_spi_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\spi_flash\bsp_spi_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_ili9341_lcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\lcd\bsp_ili9341_lcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_lcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\lcd\bsp_lcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_xpt2046_lcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\lcd\bsp_xpt2046_lcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\led\bsp_led.c</FilePath>
             </File>
           </Files>
         </Group>

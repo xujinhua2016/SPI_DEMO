@@ -33,6 +33,9 @@
 #define      macSPI_MOSI_PIN                             GPIO_Pin_7
 
 
+#define			 macSPIx_IRQn																 SPI1_IRQn
+
+
 
 /************************** SPI Flash º¯Êýºê¶¨Òå********************************/
 #define      macSPI_FLASH_CS_ENABLE()                       GPIO_ResetBits( macSPI_CS_PORT, macSPI_CS_PIN )
@@ -41,6 +44,9 @@
 
 
 void SPI_FLASH_Init(void);
+void NVIC_Configuration(void);
+
+
 void SPI_FLASH_SectorErase(u32 SectorAddr);
 void SPI_FLASH_BulkErase(void);
 void SPI_FLASH_PageWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite);
